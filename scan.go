@@ -12,10 +12,10 @@ type (
 		Scan(io.ReadCloser, Cmd) error
 	}
 
-	Scanner struct{}
+	DefaultScanner struct{}
 )
 
-func (s *Scanner) Scan(stdout io.ReadCloser, cmd Cmd) error {
+func (s *DefaultScanner) Scan(stdout io.ReadCloser, cmd Cmd) error {
 	scanner := bufio.NewScanner(stdout)
 	scanner.Split(bufio.ScanWords)
 	for scanner.Scan() {
@@ -25,6 +25,6 @@ func (s *Scanner) Scan(stdout io.ReadCloser, cmd Cmd) error {
 	return nil
 }
 
-func GetScanner() IScanner {
-	return &Scanner{}
+func GetDefaultScanner() IScanner {
+	return &DefaultScanner{}
 }
