@@ -69,7 +69,7 @@ func main() {
 	
 	commands := []gosha.Cmd{helloCmd, worldCmd}
 	
-	goshaExec := gosha.GetExec(gosha.GetScanner(), commands)
+	goshaExec := gosha.GetExec(gosha.GetDefaultScanner(), commands)
 
 	
 	if errs := goshaExec.SyncRun(); errs != nil {
