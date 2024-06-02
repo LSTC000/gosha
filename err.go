@@ -6,6 +6,7 @@ type (
 	ErrGroup string
 
 	ExecErr struct {
+		Title  string
 		Path   string
 		Detail string
 	}
@@ -16,19 +17,23 @@ const (
 	startExecErrGroup ErrGroup = "start execute"
 	waitExecErrGroup  ErrGroup = "wait execute"
 	scanErrGroup      ErrGroup = "scan"
+
+	errLogPattern      = "gosha was shocked - %s"
+	errGroupLogPattern = "%s error: %s"
 )
 
 func (e *ExecErr) Error() string {
-	return fmt.Sprintf("gosha was shocked - %s", e.Detail)
+	return fmt.Sprintf(errLogPattern, e.Detail)
 }
 
 func ErrFmt(group ErrGroup, err error) string {
-	return fmt.Sprintf("[%s] error: %s", group, err)
+	return fmt.Sprintf(errGroupLogPattern, group, err)
 }
 
-func GetExecErr(path string, detail string) error {
+func GetExecErr(cmd *Cmd, detail string) error {
 	return &ExecErr{
-		Path:   path,
+		Title:  cmd.Title,
+		Path:   cmd.Path,
 		Detail: detail,
 	}
 }

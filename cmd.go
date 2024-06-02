@@ -6,16 +6,24 @@ import (
 	"time"
 )
 
-type Cmd struct {
-	Path    string
-	Timeout time.Duration
-}
+type (
+	ICmd interface {
+		run(IScanner) error
+		syncRun(IScanner, chan<- error)
+	}
 
-func runCmd(scanner IScanner, cmd Cmd) error {
+	Cmd struct {
+		Title   string
+		Path    string
+		Timeout time.Duration
+	}
+)
+
+func (c *Cmd) run(scanner IScanner) error {
 	var cmdExec *exec.Cmd
 
-	cmdPath := cmd.Path
-	cmdTimeout := cmd.Timeout
+	cmdPath := c.Path
+	cmdTimeout := c.Timeout
 
 	if cmdTimeout > 0 {
 		ctx, cancel := context.WithTimeout(context.Background(), cmdTimeout)
@@ -27,25 +35,25 @@ func runCmd(scanner IScanner, cmd Cmd) error {
 
 	stdout, err := cmdExec.StdoutPipe()
 	if err != nil {
-		return GetExecErr(cmdPath, ErrFmt(stdoutErrGroup, err))
+		return GetExecErr(c, ErrFmt(stdoutErrGroup, err))
 	}
 
 	if err = cmdExec.Start(); err != nil {
-		return GetExecErr(cmdPath, ErrFmt(startExecErrGroup, err))
+		return GetExecErr(c, ErrFmt(startExecErrGroup, err))
 
 	}
 
-	if err = scanner.Scan(stdout, cmd); err != nil {
-		return GetExecErr(cmdPath, ErrFmt(scanErrGroup, err))
+	if err = scanner.Scan(stdout, c); err != nil {
+		return GetExecErr(c, ErrFmt(scanErrGroup, err))
 	}
 
 	if err = cmdExec.Wait(); err != nil {
-		return GetExecErr(cmdPath, ErrFmt(waitExecErrGroup, err))
+		return GetExecErr(c, ErrFmt(waitExecErrGroup, err))
 	}
 
 	return nil
 }
 
-func syncRunCmd(scanner IScanner, cmd Cmd, ch chan<- error) {
-	ch <- runCmd(scanner, cmd)
+func (c *Cmd) syncRun(scanner IScanner, ch chan<- error) {
+	ch <- c.run(scanner)
 }
